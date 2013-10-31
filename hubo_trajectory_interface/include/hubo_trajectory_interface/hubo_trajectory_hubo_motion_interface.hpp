@@ -122,6 +122,7 @@ protected:
     std::vector<double> error_;
 
     // Compliance
+    std::vector<bool> active_joints_compliance_;
     std::vector<std::string> compliant_joint_names_;
     std::vector<double> compliance_kp_;
     std::vector<double> compliance_kd_;

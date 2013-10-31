@@ -555,11 +555,23 @@ bool HuboMotionRtController::execute_linear_trajectory()
         hubo_->setJointTrajCorrectness( jnt, 0.05 );
     }
 
-    // Set the arm compliance mode
-    if( compliant_joint_names_.empty() )
-        set_arms_compliance_off();
-    else
-        set_arms_compliance_on();
+    // Set the compliance flag for each joint
+    active_joints_compliance_.resize(active_joints_.size());
+    for(size_t i=0; i<int(active_joints_.size()); i++)
+    {
+        bool enable_joint_compliance = false;
+        int real_joint_index = active_joints_[i];
+        for (size_t j=0; j<compliant_joint_names_.size(); j++)
+        {
+            std::string& name = compliant_joint_names_[j];
+            int name_joint_index = ach_index_lookup( name );
+            if (real_joint_index == name_joint_index)
+            {
+                enable_joint_compliance = true;
+            }
+        }
+        active_joints_compliance_[i] = enable_joint_compliance;
+    }
 
     while( t_cur <= t_length )
     {
@@ -576,10 +588,10 @@ bool HuboMotionRtController::execute_linear_trajectory()
         for(size_t i=0; i<int(active_joints_.size()); i++)
         {
             int jnt = active_joints_[i];
-
+            bool enable_compliance = active_joints_compliance_[i];
             // TODO test with smoothing (traj mode) 50 Hz
             hubo_->setJointTraj( jnt, q_t0[jnt], (q_t1[jnt]-q_t0[jnt])/dt, false );
-
+            hubo_->setCompliance( jnt, enable_compliance );
             error_[jnt] = q_t0[jnt] - hubo_->getJointAngleState( jnt );
         }
 

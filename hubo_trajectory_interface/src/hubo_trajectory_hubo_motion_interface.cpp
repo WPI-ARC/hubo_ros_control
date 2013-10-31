@@ -568,6 +568,7 @@ bool HuboMotionRtController::execute_linear_trajectory()
             if (real_joint_index == name_joint_index)
             {
                 enable_joint_compliance = true;
+                break;
             }
         }
         active_joints_compliance_[i] = enable_joint_compliance;

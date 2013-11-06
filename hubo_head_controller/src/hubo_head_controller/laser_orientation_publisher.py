@@ -56,7 +56,7 @@ class LaserOrientationPublisher:
                 break
 
 if __name__ == "__main__":
-    rospy.init_node("generic_tf_broadcaster")
+    rospy.init_node("laser_orientation_publisher")
     rospy.loginfo("Starting the laser orientation broadcaster...")
     #Get the parameters from the server
     root_frame = rospy.get_param("~root_frame", "Body_NK2")

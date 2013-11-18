@@ -188,7 +188,7 @@ if __name__ == '__main__':
     zero_tilt_position = rospy.get_param("~zero_tilt_position", 0.0)
     max_tilt_position = rospy.get_param("~max_tilt_position", (math.pi / 4.0))
     min_tilt_position = rospy.get_param("~min_tilt_position", -(math.pi / 4.0))
-    target_angular_rate = rospy.get_param("~target_angular_rate", (math.pi / 4.0))
+    target_angular_rate = rospy.get_param("~target_angular_rate", (math.pi / 8.0))
     error_threshold = rospy.get_param("~error_threshold", (math.pi / 36.0))
     laser_topic = rospy.get_param("~laser_topic", "laser_scan")
     laser_aggregation_service = rospy.get_param("~laser_aggregation_service", "laser_aggregation")

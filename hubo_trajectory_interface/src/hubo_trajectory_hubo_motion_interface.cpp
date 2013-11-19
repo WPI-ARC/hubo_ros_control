@@ -76,7 +76,7 @@ void stack_prefault(void) {
 
 HuboMotionRtController::HuboMotionRtController( ros::NodeHandle &n ) : node_(n), nhp_("~")
 {
-    //Get simulation flag
+    // Get simulation flag
     nhp_.param( "/use_sim_time", sim_mode, false );
     if( sim_mode )
     {
@@ -170,6 +170,9 @@ HuboMotionRtController::HuboMotionRtController( ros::NodeHandle &n ) : node_(n),
         stack_prefault();
     }
 
+    std::string log_filename( std::string(getenv("HOME")) + "/hubo_motion_interface.log" );
+    file_.open ( log_filename.c_str(), std::ios::out );
+
     // Sets up the thread for getting data from hubo and publishing it
     pub_thread_ = new boost::thread( &HuboMotionRtController::publish_loop, this );
 
@@ -180,6 +183,7 @@ HuboMotionRtController::HuboMotionRtController( ros::NodeHandle &n ) : node_(n),
 HuboMotionRtController::~HuboMotionRtController()
 {
     shut_down();
+    file_.close();
 }
 
 void HuboMotionRtController::main_loop()
@@ -578,7 +582,17 @@ bool HuboMotionRtController::execute_linear_trajectory()
             int jnt = active_joints_[i];
 
             // TODO test with smoothing (traj mode) 50 Hz
-            hubo_->setJointTraj( jnt, q_t0[jnt], (q_t1[jnt]-q_t0[jnt])/dt, false );
+            double pos = q_t0[jnt];
+            double vel = (q_t1[jnt]-pos)/dt;
+            hubo_->setJointTraj( jnt, pos, vel, false );
+
+            if( jnt == RKN || jnt == LKN )
+            {
+                if (file_.is_open())
+                {
+                    file_ << "Time : " << t_cur << ", Jnt : " << jnt << ", Pos : " << pos << ", Vel : " << vel << endl;
+                }
+            }
 
             error_[jnt] = q_t0[jnt] - hubo_->getJointAngleState( jnt );
         }

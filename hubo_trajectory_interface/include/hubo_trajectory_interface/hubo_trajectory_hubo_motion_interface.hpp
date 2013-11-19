@@ -39,10 +39,12 @@
 #include <rosgraph_msgs/Clock.h>
 // Includes for ACH and hubo-motion-rt
 #include <Hubo_Control.h>
-// Trajectory structure
+// Trajectory Structure
 #include <hubo_trajectory_interface/hubo_trajectory.hpp>
 // Boost includes
 #include <boost/thread.hpp>
+// Logging to file
+#include <fstream>
 
 class HuboMotionRtController
 {
@@ -132,4 +134,7 @@ protected:
 
     // Execution state
     bool running_;
+
+    // Logging to file
+    std::ofstream file_;
 };

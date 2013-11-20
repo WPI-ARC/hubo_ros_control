@@ -112,7 +112,7 @@ class LaserPointCloudGenerator:
             rospy.logerr("Unable to reach prep angle")
             return
         # Flush and enable laser scan storage
-        with self.scan_lock
+        with self.scan_lock:
             self.laser_scans = []
             self.active = True
         # Sweep the LIDAR down to MAX_ANGLE
@@ -199,8 +199,8 @@ if __name__ == '__main__':
         result = LPCG.SelfTest()
         retry_rate.sleep()
     result = False
-    rospy.loginfo("Starting LaserScanAction server...")
+    rospy.loginfo("Starting LaserPointCloudGenerator...")
     result = LPCG.Loop()
     if (not result):
-        rospy.logwarn("LaserScanController actionserver stopped, attempting to safely shutdown")
-    rospy.loginfo("...Operations complete, LaserScanController safed and shutdown")
+        rospy.logwarn("LaserPointCloudGenerator stopped, attempting to safely shutdown")
+    rospy.loginfo("...Operations complete, LaserPointCloudGenerator safed and shutdown")

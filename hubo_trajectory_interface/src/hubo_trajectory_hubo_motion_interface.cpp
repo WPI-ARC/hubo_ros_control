@@ -41,6 +41,8 @@
 #include <sys/time.h>
 #include <unistd.h>
 
+#define DEBUG_KNEE 1
+
 using std::cout;
 using std::endl;
 
@@ -170,9 +172,6 @@ HuboMotionRtController::HuboMotionRtController( ros::NodeHandle &n ) : node_(n),
         stack_prefault();
     }
 
-    std::string log_filename( std::string(getenv("HOME")) + "/hubo_motion_interface.log" );
-    file_.open ( log_filename.c_str(), std::ios::out );
-
     // Sets up the thread for getting data from hubo and publishing it
     pub_thread_ = new boost::thread( &HuboMotionRtController::publish_loop, this );
 
@@ -183,7 +182,6 @@ HuboMotionRtController::HuboMotionRtController( ros::NodeHandle &n ) : node_(n),
 HuboMotionRtController::~HuboMotionRtController()
 {
     shut_down();
-    file_.close();
 }
 
 void HuboMotionRtController::main_loop()
@@ -387,6 +385,18 @@ void HuboMotionRtController::trajectory_cb( const hubo_robot_msgs::JointTrajecto
         return;
     }
 
+#ifdef DEBUG_KNEE
+    timeval tim;
+    gettimeofday(&tim, NULL);
+    char buffer [80];
+    strftime( buffer, 80, "%Y-%m-%d_%H:%M:%S", localtime(&tim.tv_sec) );
+
+    std::string log_filename( std::string(getenv("HOME") ) + "/hubo_traj_message_" + std::string(buffer) + ".log" );
+    file_.open ( log_filename.c_str(), std::ios::out );
+    file_ << ros_traj << endl;
+    file_.close();
+#endif
+
     ROS_INFO("Reprocessing trajectory with %ld elements into chunks", ros_traj.points.size());
 
     // Set trajectory
@@ -559,6 +569,16 @@ bool HuboMotionRtController::execute_linear_trajectory()
         hubo_->setJointTrajCorrectness( jnt, 0.05 );
     }
 
+#ifdef DEBUG_KNEE
+    timeval tim;
+    gettimeofday(&tim, NULL);
+    char buffer [80];
+    strftime( buffer, 80, "%Y-%m-%d_%H:%M:%S", localtime(&tim.tv_sec) );
+
+    std::string log_filename( std::string(getenv("HOME") ) + "/hubo_motion_interface_" + std::string(buffer) + ".log" );
+    file_.open ( log_filename.c_str(), std::ios::out );
+#endif
+
     // Set the arm compliance mode
     if( compliant_joint_names_.empty() )
         set_arms_compliance_off();
@@ -586,14 +606,15 @@ bool HuboMotionRtController::execute_linear_trajectory()
             double vel = (q_t1[jnt]-pos)/dt;
             hubo_->setJointTraj( jnt, pos, vel, false );
 
+#ifdef DEBUG_KNEE
             if( jnt == RKN || jnt == LKN )
             {
                 if (file_.is_open())
                 {
-                    file_ << "Time : " << t_cur << ", Jnt : " << jnt << ", Pos : " << pos << ", Vel : " << vel << endl;
+                    file_ << jnt << "," << t_cur << "," << pos << "," << vel << endl;
                 }
             }
-
+#endif
             error_[jnt] = q_t0[jnt] - hubo_->getJointAngleState( jnt );
         }
 
@@ -629,6 +650,10 @@ bool HuboMotionRtController::execute_linear_trajectory()
             tsnorm(&t);
         }
     }
+
+#ifdef DEBUG_KNEE
+    file_.close();
+#endif
 
     ROS_INFO( "Total time : %f", t_total );
     ROS_INFO( "Nb Loops : %d", nb_loops );

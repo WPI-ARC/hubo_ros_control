@@ -96,9 +96,9 @@ class PointHeadController:
     def execute_point_head(self, point_head_goal):
         pan = None
         tilt = None
-        if (point_head_goal.TARGETTYPE == point_head_goal.POINTTARGET):
+        if (point_head_goal.target_type == point_head_goal.POINTTARGET):
             [pan, tilt] = self.ComputePointingAngle(point_head_goal)
-        elif (point_head_goal.TARGETTYPE == point_head_goal.ANGLETARGET):
+        elif (point_head_goal.target_type == point_head_goal.ANGLETARGET):
             pan = point_head_goal.pan_angle
             tilt = point_head_goal.tilt_angle
         else:

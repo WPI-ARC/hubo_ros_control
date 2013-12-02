@@ -94,7 +94,16 @@ class PointHeadController:
         return False
 
     def execute_point_head(self, point_head_goal):
-        [pan, tilt] = self.ComputePointingAngle(point_head_goal)
+        pan = None
+        tilt = None
+        if (point_head_goal.target_type == point_head_goal.POINTTARGET):
+            [pan, tilt] = self.ComputePointingAngle(point_head_goal)
+        elif (point_head_goal.target_type == point_head_goal.ANGLETARGET):
+            pan = point_head_goal.pan_angle
+            tilt = point_head_goal.tilt_angle
+        else:
+            rospy.logerr("Aborting PointHeadAction Goal due to invalid target type")
+            self.server.set_aborted()
         safe = self.CheckSafetyBounds(pan, tilt)
         if not safe:
             rospy.logerr("Aborting PointHeadAction Goal due to safety violations")

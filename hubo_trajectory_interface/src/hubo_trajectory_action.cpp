@@ -170,12 +170,17 @@ private:
             active_goal_.setCanceled();
             has_active_goal_ = false;
         }
-        // Accept and send the new goal
+        // Accept the new goal
         gh.setAccepted();
         active_goal_ = gh;
         has_active_goal_ = true;
-        // Sends the trajectory along to the controller
+        // Sets the current trajectory
         current_traj_ = active_goal_.getGoal()->trajectory;
+        // Reset the timestamp on the new trajectory to the current time - this ensures timing differences don't hurt us
+        ROS_INFO("New trajectory with stamp: %f, current time is: %f", current_traj_.header.stamp.toSec(), ros::Time::now().toSec());
+        current_traj_.header.stamp = ros::Time::now();
+        ROS_INFO("Reset stamp on new trajectory to: %f, current time is: %f", current_traj_.header.stamp.toSec(), ros::Time::now().toSec());
+        // Sends the trajectory along to the controller
         ROS_INFO("Sending goal trajectory to the execution backend");
         pub_interface_command_.publish(current_traj_);
     }
